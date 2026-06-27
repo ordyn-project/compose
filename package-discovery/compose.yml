@@ -1,0 +1,16 @@
+name: ordyn-package-discovery
+
+services:
+  package-discovery:
+    image: docker.hank-it.com/ordyn/package-discovery:${PACKAGE_DISCOVERY_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - package-discovery-data:/data
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+
+volumes:
+  package-discovery-data:

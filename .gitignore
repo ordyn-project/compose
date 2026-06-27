@@ -1,0 +1,5 @@
+.idea/
+.ai/
+**/.env
+**/compose.override.yml
+frontend/config.json

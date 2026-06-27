@@ -1,0 +1,18 @@
+name: ordyn-snmp
+
+services:
+  snmp:
+    image: docker.hank-it.com/ordyn/snmp:${SNMP_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    ports:
+      - "162:9162/udp"
+    volumes:
+      - snmp-data:/data
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+
+volumes:
+  snmp-data:

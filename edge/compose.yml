@@ -1,0 +1,48 @@
+name: ordyn-edge
+
+services:
+  edge:
+    image: docker.hank-it.com/ordyn/edge:${EDGE_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - edge-data:/data
+    networks:
+      - frontend
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.http.services.ordyn-edge.loadbalancer.server.port=8080"
+      - "traefik.http.services.ordyn-edge.loadbalancer.server.scheme=http"
+      - "traefik.http.middlewares.ordyn-edge-backend-only.ipallowlist.sourcerange=${BACKEND_SOURCE_RANGE:-172.17.0.0/16}"
+      - "traefik.http.routers.ordyn-edge-internal.rule=Host(`${SERVICE_DOMAIN:?err}`) && PathPrefix(`/internal/`)"
+      - "traefik.http.routers.ordyn-edge-internal.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-edge-internal.middlewares=ordyn-edge-backend-only"
+      - "traefik.http.routers.ordyn-edge-internal.service=ordyn-edge"
+      - "traefik.http.routers.ordyn-edge-api.rule=Host(`${SERVICE_DOMAIN:?err}`) && PathPrefix(`/v1/`)"
+      - "traefik.http.routers.ordyn-edge-api.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-edge-api.service=ordyn-edge"
+      - "traefik.http.routers.ordyn-edge-agent.rule=Host(`${SERVICE_DOMAIN:?err}`) && Path(`/ws/agent`)"
+      - "traefik.http.routers.ordyn-edge-agent.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-edge-agent.service=ordyn-edge"
+      - "traefik.http.routers.ordyn-edge-service-client.rule=Host(`${SERVICE_DOMAIN:?err}`) && Path(`/ws/service-client`)"
+      - "traefik.http.routers.ordyn-edge-service-client.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-edge-service-client.service=ordyn-edge"
+      - "traefik.http.routers.ordyn-edge-preboot-session.rule=Host(`${SERVICE_DOMAIN:?err}`) && Path(`/ws/preboot-session`)"
+      - "traefik.http.routers.ordyn-edge-preboot-session.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-edge-preboot-session.service=ordyn-edge"
+    healthcheck:
+      test: 'wget -qO- "http://127.0.0.1:8080/healthz" >/dev/null || exit 1'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  edge-data:
+
+networks:
+  frontend:
+    external: true

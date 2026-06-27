@@ -1,0 +1,28 @@
+name: ordyn-webhooks
+
+services:
+  webhooks:
+    image: docker.hank-it.com/ordyn/webhooks:${WEBHOOKS_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - webhooks-data:/data
+    networks:
+      - frontend
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.http.services.ordyn-webhooks.loadbalancer.server.port=8080"
+      - "traefik.http.services.ordyn-webhooks.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.ordyn-webhooks-ingress.rule=Host(`${SERVICE_DOMAIN:?err}`) && PathPrefix(`/v1/hooks/`)"
+      - "traefik.http.routers.ordyn-webhooks-ingress.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-webhooks-ingress.service=ordyn-webhooks"
+
+volumes:
+  webhooks-data:
+
+networks:
+  frontend:
+    external: true

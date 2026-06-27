@@ -1,0 +1,231 @@
+name: ordyn-api
+
+services:
+  fpm:
+    image: docker.hank-it.com/ordyn/fpm:${API_TAG:-stable}
+    restart: always
+    env_file: ".env"
+    environment:
+      ORDYN_SERVICE_ROLE: fpm
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - default
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  web:
+    image: docker.hank-it.com/ordyn/web:${API_TAG:-stable}
+    restart: always
+    volumes:
+      - app-storage:/var/www/html/storage
+    environment:
+      FPM_SERVICE: fpm
+    networks:
+      - default
+      - frontend
+    depends_on:
+      fpm:
+        condition: service_started
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.http.routers.ordyn-backend-web.rule=Host(`${ORDYN_API_HOST:?err}`)"
+      - "traefik.http.routers.ordyn-backend-web.entrypoints=websecure"
+      - "traefik.http.services.ordyn-backend-web.loadbalancer.server.port=8080"
+
+  scheduler:
+    image: docker.hank-it.com/ordyn/fpm:${API_TAG:-stable}
+    restart: always
+    env_file: ".env"
+    environment:
+      ORDYN_SERVICE_ROLE: scheduler
+    entrypoint: ordyn-observed
+    command:
+      - php artisan schedule:work
+    volumes:
+      - app-storage:/var/www/html/storage
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  horizon:
+    image: docker.hank-it.com/ordyn/fpm:${API_TAG:-stable}
+    restart: always
+    env_file: ".env"
+    environment:
+      ORDYN_SERVICE_ROLE: horizon
+    entrypoint: ordyn-observed
+    stop_signal: SIGTERM
+    networks:
+      - default
+    command:
+      - php artisan horizon
+    volumes:
+      - app-storage:/var/www/html/storage
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+    depends_on:
+      redis:
+        condition: service_started
+      database:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  relay-bridge:
+    image: docker.hank-it.com/ordyn/fpm:${API_TAG:-stable}
+    restart: always
+    env_file: ".env"
+    environment:
+      ORDYN_SERVICE_ROLE: relay-bridge
+    entrypoint: ordyn-observed
+    networks:
+      - default
+    command:
+      - php artisan ordyn:relay-bridge
+    volumes:
+      - app-storage:/var/www/html/storage
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  cache-bridge:
+    image: docker.hank-it.com/ordyn/fpm:${API_TAG:-stable}
+    restart: always
+    env_file: ".env"
+    entrypoint: ordyn-observed
+    environment:
+      ORDYN_SERVICE_ROLE: cache-bridge
+    networks:
+      - default
+    command:
+      - php artisan ordyn:cache-bridge
+    volumes:
+      - app-storage:/var/www/html/storage
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  clamav:
+    image: clamav/clamav:${CLAMAV_TAG:-1.5.2}
+    restart: unless-stopped
+    environment:
+      CLAMD_CONF_StreamMaxLength: 15360M
+      CLAMD_CONF_MaxScanSize: 15360M
+      CLAMD_CONF_MaxFileSize: 15360M
+      CLAMD_CONF_ReadTimeout: 1800
+      CLAMD_CONF_CommandReadTimeout: 1800
+    volumes:
+      - "clamav-db:/var/lib/clamav"
+    networks:
+      - default
+
+  redis:
+    image: redis:${REDIS_TAG:-8-alpine}
+    restart: unless-stopped
+    command:
+      - "redis-server"
+      - "/usr/local/etc/redis/redis.conf"
+    volumes:
+      - "redis-storage:/data"
+      - "/opt/ordyn-compose/api/redis.conf:/usr/local/etc/redis/redis.conf:ro"
+
+  database:
+    image: postgres:${POSTGRES_TAG:-18-alpine}
+    restart: unless-stopped
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql/postgresql.conf"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:?err}
+      POSTGRES_USER: ${DB_USERNAME:?err}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?err}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U \"$DB_USERNAME\" -d \"$DB_DATABASE\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - "database-storage:/var/lib/postgresql"
+      - "/opt/ordyn-compose/api/postgresql.conf:/etc/postgresql/postgresql.conf:ro"
+
+  websockets:
+    image: quay.io/soketi/soketi:${WEBSOCKET_TAG:-1.6-16-alpine}
+    restart: unless-stopped
+    environment:
+      SOKETI_DEBUG: '0'
+      SOKETI_DEFAULT_APP_ID: ${WEBSOCKET_APP_ID}
+      SOKETI_DEFAULT_APP_KEY: ${WEBSOCKET_APP_KEY}
+      SOKETI_DEFAULT_APP_SECRET: ${WEBSOCKET_APP_SECRET}
+      SOKETI_EVENT_MAX_SIZE_IN_KB: 1024
+    networks:
+      - frontend
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ordyn-soketi.rule=Host(`${ORDYN_API_HOST:?err}`) && PathPrefix(`/ws`)"
+      - "traefik.http.routers.ordyn-soketi.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-soketi.service=ordyn-soketi"
+      - "traefik.http.services.ordyn-soketi.loadbalancer.server.port=6001"
+      - "traefik.http.services.ordyn-soketi.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.ordyn-soketi.middlewares=ordyn-soketi-stripprefix"
+      - "traefik.http.middlewares.ordyn-soketi-stripprefix.stripprefix.prefixes=/ws"
+
+  package-analyzer:
+    image: docker.hank-it.com/ordyn/package-analyzer:${API_TAG:-stable}
+    restart: unless-stopped
+    networks:
+      - default
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+
+  pdf-renderer:
+    image: docker.hank-it.com/ordyn/pdf-renderer:${API_TAG:-stable}
+    restart: unless-stopped
+    networks:
+      - default
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+
+volumes:
+  database-storage:
+  app-storage:
+  redis-storage:
+  clamav-db:
+
+networks:
+  frontend:
+    external: true
+  default:

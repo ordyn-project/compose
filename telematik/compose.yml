@@ -1,0 +1,16 @@
+name: ordyn-telematik
+
+services:
+  telematik:
+    image: docker.hank-it.com/ordyn/telematik:${TELEMATIK_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - telematik-data:/data
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+
+volumes:
+  telematik-data:

@@ -1,0 +1,11 @@
+{
+  "environment": "production",
+  "ssl": true,
+  "frontendDomain": "ordyn.example.com",
+  "api": [
+    {
+      "server": "api.ordyn.example.com",
+      "websocketKey": ""
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+name: ordyn-traefik
+
+services:
+  traefik:
+    image: traefik:${TRAEFIK_TAG:-v3}
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=frontend"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.websecure.http.tls.certresolver=lets-encrypt"
+      - "--certificatesresolvers.lets-encrypt.acme.email=${TRAEFIK_ACME_EMAIL:-}"
+      - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.lets-encrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.lets-encrypt.acme.httpchallenge.entrypoint=web"
+      - "--api.dashboard=false"
+      - "--log.level=${TRAEFIK_LOG_LEVEL:-INFO}"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - frontend
+
+volumes:
+  letsencrypt:
+
+networks:
+  frontend:
+    name: frontend

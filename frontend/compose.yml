@@ -1,0 +1,20 @@
+name: ordyn-frontend
+
+services:
+  server:
+    image: docker.hank-it.com/ordyn/frontend:${FRONTEND_TAG:-stable}
+    restart: always
+    volumes:
+      - "/opt/ordyn-compose/frontend/config.json:/app/config.json:ro"
+    networks:
+      - frontend
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.http.routers.ordyn-frontend.rule=Host(`${ORDYN_FRONTEND_HOST:?err}`)"
+      - "traefik.http.routers.ordyn-frontend.entrypoints=websecure"
+      - "traefik.http.services.ordyn-frontend.loadbalancer.server.port=3000"
+
+networks:
+  frontend:
+    external: true

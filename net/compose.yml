@@ -1,0 +1,24 @@
+name: ordyn-net
+
+services:
+  net:
+    image: docker.hank-it.com/ordyn/net:${NET_TAG:-stable}
+    container_name: ordyn-net
+    restart: always
+    init: true
+    network_mode: host
+    env_file:
+      - .env
+    volumes:
+      - net-data:/var/lib/ordyn-net
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.http.services.ordyn-net.loadbalancer.server.port=8080"
+      - "traefik.http.services.ordyn-net.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.ordyn-net.rule=Host(`${SERVICE_DOMAIN:?err}`)"
+      - "traefik.http.routers.ordyn-net.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-net.service=ordyn-net"
+
+volumes:
+  net-data:

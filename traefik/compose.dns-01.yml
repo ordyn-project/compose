@@ -1,0 +1,24 @@
+services:
+  traefik:
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=frontend"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.websecure.http.tls.certresolver=lets-encrypt"
+      - "--certificatesresolvers.lets-encrypt.acme.email=${TRAEFIK_ACME_EMAIL:-}"
+      - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.lets-encrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.provider=${TRAEFIK_DNS_PROVIDER:-route53}"
+      - "--api.dashboard=false"
+      - "--log.level=${TRAEFIK_LOG_LEVEL:-INFO}"
+      - "--accesslog=true"
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?err}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?err}
+      AWS_REGION: ${AWS_REGION:-eu-central-1}
+      AWS_HOSTED_ZONE_ID: ${AWS_HOSTED_ZONE_ID:-}

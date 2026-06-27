@@ -1,0 +1,39 @@
+name: ordyn-cache
+
+services:
+  cache:
+    image: docker.hank-it.com/ordyn/cache:${CACHE_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - cache-data:/data
+    networks:
+      - frontend
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.http.services.ordyn-cache.loadbalancer.server.port=8080"
+      - "traefik.http.services.ordyn-cache.loadbalancer.server.scheme=http"
+      - "traefik.http.middlewares.ordyn-cache-backend-only.ipallowlist.sourcerange=${BACKEND_SOURCE_RANGE:-172.17.0.0/16}"
+      - "traefik.http.routers.ordyn-cache-api.rule=Host(`${SERVICE_DOMAIN:?err}`) && PathPrefix(`/v1/`)"
+      - "traefik.http.routers.ordyn-cache-api.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-cache-api.service=ordyn-cache"
+      - "traefik.http.routers.ordyn-cache-internal.rule=Host(`${SERVICE_DOMAIN:?err}`) && PathPrefix(`/internal/`)"
+      - "traefik.http.routers.ordyn-cache-internal.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-cache-internal.middlewares=ordyn-cache-backend-only"
+      - "traefik.http.routers.ordyn-cache-internal.service=ordyn-cache"
+    healthcheck:
+      test: 'wget -qO- "http://127.0.0.1:8080/healthz" >/dev/null || exit 1'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  cache-data:
+
+networks:
+  frontend:
+    external: true
