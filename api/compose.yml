@@ -16,6 +16,7 @@ services:
         condition: service_started
     networks:
       - default
+      - package-analysis
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
     extra_hosts:
@@ -208,8 +209,26 @@ services:
   package-analyzer:
     image: docker.hank-it.com/ordyn/package-analyzer:${API_TAG:-stable}
     restart: unless-stopped
+    environment:
+      PACKAGE_ANALYZER_MAX_INPUT_BYTES: "${PACKAGE_ANALYZER_MAX_INPUT_BYTES:-16106127360}"
+      PACKAGE_ANALYZER_REQUEST_DEADLINE_SECONDS: "${PACKAGE_ANALYZER_REQUEST_DEADLINE_SECONDS:-50}"
+      PACKAGE_ANALYZER_MAX_CONCURRENT_ANALYSES: "${PACKAGE_ANALYZER_MAX_CONCURRENT_ANALYSES:-2}"
+      PACKAGE_ANALYZER_PROCESS_TIMEOUT_SECONDS: "${PACKAGE_ANALYZER_PROCESS_TIMEOUT_SECONDS:-20}"
+      PACKAGE_ANALYZER_MIN_FREE_TEMP_BYTES: "${PACKAGE_ANALYZER_MIN_FREE_TEMP_BYTES:-536870912}"
+    volumes:
+      - package-analyzer-tmp:/var/tmp/package-analyzer
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: "${PACKAGE_ANALYZER_PIDS_LIMIT:-128}"
+    mem_limit: "${PACKAGE_ANALYZER_MEMORY_LIMIT:-2g}"
+    cpus: "${PACKAGE_ANALYZER_CPU_LIMIT:-2.0}"
+    tmpfs:
+      - /tmp:size=64m,mode=1777
     networks:
-      - default
+      - package-analysis
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
 
@@ -226,8 +245,11 @@ volumes:
   app-storage:
   redis-storage:
   clamav-db:
+  package-analyzer-tmp:
 
 networks:
   frontend:
     external: true
   default:
+  package-analysis:
+    internal: true
