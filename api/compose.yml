@@ -13,7 +13,7 @@ services:
       database:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     networks:
       - default
       - package-analysis
@@ -38,7 +38,7 @@ services:
       database:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=true"
@@ -63,7 +63,7 @@ services:
       database:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -85,7 +85,7 @@ services:
       - "cosign.verify=keys/ordyn-2026-06.pub"
     depends_on:
       redis:
-        condition: service_started
+        condition: service_healthy
       database:
         condition: service_healthy
     extra_hosts:
@@ -110,7 +110,7 @@ services:
       database:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -133,7 +133,7 @@ services:
       database:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -157,6 +157,12 @@ services:
     command:
       - "redis-server"
       - "/usr/local/etc/redis/redis.conf"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     volumes:
       - "redis-storage:/data"
       - "/opt/ordyn-compose/api/redis.conf:/usr/local/etc/redis/redis.conf:ro"
