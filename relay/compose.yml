@@ -1,0 +1,62 @@
+name: ordyn-relay
+
+services:
+  relay:
+    image: docker.hank-it.com/ordyn/relay:${RELAY_TAG:-stable}
+    restart: always
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - relay-data:/data
+    networks:
+      - relay
+      - frontend
+    depends_on:
+      redis:
+        condition: service_healthy
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.services.ordyn-relay.loadbalancer.server.port=8080"
+      - "traefik.http.services.ordyn-relay.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.ordyn-relay.rule=Host(`${SERVICE_DOMAIN:?err}`)"
+      - "traefik.http.routers.ordyn-relay.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-relay.service=ordyn-relay"
+    healthcheck:
+      test: 'wget -qO- "http://127.0.0.1:8080/healthz" >/dev/null || exit 1'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: redis:${REDIS_TAG:-8-alpine}
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 64mb
+      - --maxmemory-policy
+      - noeviction
+    networks:
+      - relay
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  relay-data:
+
+networks:
+  relay:
+  frontend:
+    external: true
