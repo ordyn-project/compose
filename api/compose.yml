@@ -92,17 +92,17 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  relay-bridge:
+  edge-bridge:
     image: docker.hank-it.com/ordyn/fpm:${API_TAG:-stable}
     restart: always
     env_file: ".env"
     environment:
-      ORDYN_SERVICE_ROLE: relay-bridge
+      ORDYN_SERVICE_ROLE: edge-bridge
     entrypoint: ordyn-observed
     networks:
       - default
     command:
-      - php artisan ordyn:relay-bridge
+      - php artisan ordyn:edge-bridge
     volumes:
       - app-storage:/var/www/html/storage
     labels:
