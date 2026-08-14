@@ -14,6 +14,7 @@ services:
       - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.lets-encrypt.acme.dnschallenge=true"
       - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.provider=${TRAEFIK_DNS_PROVIDER:?TRAEFIK_DNS_PROVIDER must be set}"
+      - "--certificatesresolvers.lets-encrypt.acme.dnschallenge.resolvers=${TRAEFIK_DNS_RESOLVERS:-1.1.1.1:53,8.8.8.8:53}"
       - "--api.dashboard=false"
       - "--log.level=${TRAEFIK_LOG_LEVEL:-INFO}"
       - "--accesslog=true"
