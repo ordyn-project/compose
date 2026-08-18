@@ -36,4 +36,5 @@ volumes:
 
 networks:
   frontend:
+    name: ${FRONTEND_NETWORK_NAME:-frontend}
     external: true

@@ -3,7 +3,7 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=frontend"
+      - "--providers.docker.network=${FRONTEND_NETWORK_NAME:-frontend}"
       - "--providers.file.directory=/dynamic"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"

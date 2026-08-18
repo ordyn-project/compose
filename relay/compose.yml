@@ -18,7 +18,7 @@ services:
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=true"
-      - "traefik.docker.network=frontend"
+      - "traefik.docker.network=${FRONTEND_NETWORK_NAME:-frontend}"
       - "traefik.http.services.ordyn-relay.loadbalancer.server.port=8080"
       - "traefik.http.services.ordyn-relay.loadbalancer.server.scheme=http"
       - "traefik.http.routers.ordyn-relay.rule=Host(`${SERVICE_DOMAIN:?err}`)"
@@ -59,4 +59,5 @@ volumes:
 networks:
   relay:
   frontend:
+    name: ${FRONTEND_NETWORK_NAME:-frontend}
     external: true
