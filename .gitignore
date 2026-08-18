@@ -1,5 +1,6 @@
 .idea/
 .ai/
+*/.gitignore
 **/.env
 **/compose.override.yml
 frontend/config.json
