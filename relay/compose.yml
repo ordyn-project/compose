@@ -19,13 +19,13 @@ services:
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=true"
       - "traefik.docker.network=${FRONTEND_NETWORK_NAME:-frontend}"
-      - "traefik.http.services.ordyn-relay.loadbalancer.server.port=8080"
+      - "traefik.http.services.ordyn-relay.loadbalancer.server.port=${PORT:-8080}"
       - "traefik.http.services.ordyn-relay.loadbalancer.server.scheme=http"
-      - "traefik.http.routers.ordyn-relay.rule=Host(`${SERVICE_DOMAIN:?err}`)"
+      - "traefik.http.routers.ordyn-relay.rule=Host(`${SERVICE_DOMAIN:?err}`) && (Path(`/v1/amt-kvm`) || Path(`/v1/amt-sol`) || Path(`/v1/hyperv-kvm`))"
       - "traefik.http.routers.ordyn-relay.entrypoints=websecure"
       - "traefik.http.routers.ordyn-relay.service=ordyn-relay"
     healthcheck:
-      test: 'wget -qO- "http://127.0.0.1:8080/healthz" >/dev/null || exit 1'
+      test: 'wget -qO- "http://127.0.0.1:$${PORT:-8080}/healthz" >/dev/null || exit 1'
       interval: 30s
       timeout: 5s
       retries: 3

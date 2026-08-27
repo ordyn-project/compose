@@ -13,6 +13,12 @@ services:
       - snmp-data:/data
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+    healthcheck:
+      test: 'wget -qO- "http://127.0.0.1:$${PORT:-8080}/healthz" >/dev/null || exit 1'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   snmp-data:
