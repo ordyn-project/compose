@@ -19,6 +19,7 @@ services:
       - package-analysis
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -59,6 +60,7 @@ services:
       - app-storage:/var/www/html/storage
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
     depends_on:
       database:
         condition: service_healthy
@@ -84,6 +86,7 @@ services:
       - app-storage:/var/www/html/storage
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
     depends_on:
       redis:
         condition: service_healthy
@@ -107,6 +110,7 @@ services:
       - app-storage:/var/www/html/storage
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
     depends_on:
       database:
         condition: service_healthy
@@ -130,6 +134,7 @@ services:
       - app-storage:/var/www/html/storage
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
     depends_on:
       database:
         condition: service_healthy
@@ -141,6 +146,8 @@ services:
   clamav:
     image: clamav/clamav:${CLAMAV_TAG:-1.5.2}
     restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
     environment:
       CLAMD_CONF_StreamMaxLength: 15360M
       CLAMD_CONF_MaxScanSize: 15360M
@@ -155,6 +162,8 @@ services:
   redis:
     image: redis:${REDIS_TAG:-8-alpine}
     restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
     command:
       - "redis-server"
       - "/usr/local/etc/redis/redis.conf"
@@ -171,6 +180,8 @@ services:
   database:
     image: postgres:${POSTGRES_TAG:-18-alpine}
     restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
     command:
       - "postgres"
       - "-c"
@@ -238,6 +249,7 @@ services:
       - package-analysis
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
 
   pdf-renderer:
     image: docker.hank-it.com/ordyn/pdf-renderer:${API_TAG:-stable}
@@ -246,6 +258,7 @@ services:
       - default
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
 
 volumes:
   database-storage:
