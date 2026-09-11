@@ -21,7 +21,7 @@ services:
       - "traefik.docker.network=${FRONTEND_NETWORK_NAME:-frontend}"
       - "traefik.http.services.ordyn-relay.loadbalancer.server.port=${PORT:-8080}"
       - "traefik.http.services.ordyn-relay.loadbalancer.server.scheme=http"
-      - "traefik.http.routers.ordyn-relay.rule=Host(`${SERVICE_DOMAIN:?err}`) && (Path(`/v1/amt-kvm`) || Path(`/v1/amt-sol`) || Path(`/v1/hyperv-kvm`))"
+      - "traefik.http.routers.ordyn-relay.rule=Host(`${SERVICE_DOMAIN:?err}`) && (Path(`/v1/amt-kvm`) || Path(`/v1/amt-sol`) || Path(`/v1/hyperv-kvm`) || Path(`/v1/desktop-rfb`) || Path(`/v1/quick-support`) || Path(`/v1/quick-support-rfb`))"
       - "traefik.http.routers.ordyn-relay.entrypoints=websecure"
       - "traefik.http.routers.ordyn-relay.service=ordyn-relay"
     healthcheck:
