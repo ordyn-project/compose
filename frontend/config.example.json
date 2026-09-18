@@ -7,8 +7,5 @@
       "server": "api.ordyn.example.com",
       "websocketKey": ""
     }
-  ],
-  "relayOrigins": [
-    "https://relay.ordyn.example.com"
   ]
 }
