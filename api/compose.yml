@@ -18,6 +18,7 @@ services:
       - default
       - package-analysis
     labels:
+      - "com.ordyn.role=api"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
     extra_hosts:
@@ -41,6 +42,7 @@ services:
       redis:
         condition: service_healthy
     labels:
+      - "com.ordyn.role=web"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=true"
       - "traefik.http.routers.ordyn-backend-web.rule=Host(`${ORDYN_API_HOST:?err}`)"
@@ -59,6 +61,7 @@ services:
     volumes:
       - app-storage:/var/www/html/storage
     labels:
+      - "com.ordyn.role=scheduler"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
     depends_on:
@@ -85,6 +88,7 @@ services:
     volumes:
       - app-storage:/var/www/html/storage
     labels:
+      - "com.ordyn.role=horizon"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
     depends_on:
@@ -109,6 +113,7 @@ services:
     volumes:
       - app-storage:/var/www/html/storage
     labels:
+      - "com.ordyn.role=writer"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
     depends_on:
@@ -133,6 +138,7 @@ services:
     volumes:
       - app-storage:/var/www/html/storage
     labels:
+      - "com.ordyn.role=writer"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
     depends_on:
@@ -147,6 +153,7 @@ services:
     image: clamav/clamav:${CLAMAV_TAG:-1.5.2}
     restart: unless-stopped
     labels:
+      - "com.ordyn.role=dependency"
       - "traefik.enable=false"
     environment:
       CLAMD_CONF_StreamMaxLength: 15360M
@@ -163,6 +170,7 @@ services:
     image: redis:${REDIS_TAG:-8-alpine}
     restart: unless-stopped
     labels:
+      - "com.ordyn.role=dependency"
       - "traefik.enable=false"
     command:
       - "redis-server"
@@ -181,6 +189,7 @@ services:
     image: postgres:${POSTGRES_TAG:-18-alpine}
     restart: unless-stopped
     labels:
+      - "com.ordyn.role=dependency"
       - "traefik.enable=false"
     command:
       - "postgres"
@@ -215,6 +224,7 @@ services:
       - frontend
       - default
     labels:
+      - "com.ordyn.role=dependency"
       - "traefik.enable=true"
       - "traefik.http.routers.ordyn-soketi.rule=Host(`${ORDYN_API_HOST:?err}`) && PathPrefix(`/ws`)"
       - "traefik.http.routers.ordyn-soketi.entrypoints=websecure"
@@ -248,6 +258,7 @@ services:
     networks:
       - package-analysis
     labels:
+      - "com.ordyn.role=dependency"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
 
@@ -257,6 +268,7 @@ services:
     networks:
       - default
     labels:
+      - "com.ordyn.role=dependency"
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"
 
