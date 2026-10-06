@@ -12,6 +12,7 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.transport.respondingtimeouts.readtimeout=${TRAEFIK_READ_TIMEOUT:-10m}"
       - "--entrypoints.websecure.http.tls=true"
       - "--entrypoints.websecure.http.tls.certresolver=lets-encrypt"
       - "--certificatesresolvers.lets-encrypt.acme.email=${TRAEFIK_ACME_EMAIL:-}"
