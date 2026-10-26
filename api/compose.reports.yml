@@ -1,0 +1,20 @@
+# Enable with: docker compose -f compose.yml -f compose.reports.yml up -d
+# Use a hostname outside SESSION_DOMAIN, CORS_ALLOWED_ORIGINS and SANCTUM_STATEFUL_DOMAINS.
+services:
+  web:
+    labels:
+      - "traefik.http.routers.ordyn-reports.rule=Host(`${ORDYN_REPORTS_HOST:?Set ORDYN_REPORTS_HOST to an isolated report hostname}`) && PathPrefix(`/r/`)"
+      - "traefik.http.routers.ordyn-reports.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-reports.service=ordyn-backend-web"
+      - "traefik.http.routers.ordyn-reports.priority=100"
+      - "traefik.http.routers.ordyn-reports.observability.accesslogs=false"
+      - "traefik.http.routers.ordyn-reports.observability.tracing=false"
+      # Keep ordinary API routes and static files unreachable on the reports host.
+      - "traefik.http.routers.ordyn-reports-deny.rule=Host(`${ORDYN_REPORTS_HOST:?Set ORDYN_REPORTS_HOST to an isolated report hostname}`)"
+      - "traefik.http.routers.ordyn-reports-deny.entrypoints=websecure"
+      - "traefik.http.routers.ordyn-reports-deny.service=ordyn-backend-web"
+      - "traefik.http.routers.ordyn-reports-deny.priority=90"
+      - "traefik.http.routers.ordyn-reports-deny.middlewares=ordyn-reports-deny"
+      - "traefik.http.routers.ordyn-reports-deny.observability.accesslogs=false"
+      - "traefik.http.routers.ordyn-reports-deny.observability.tracing=false"
+      - "traefik.http.middlewares.ordyn-reports-deny.replacepath.path=/r/unavailable"
