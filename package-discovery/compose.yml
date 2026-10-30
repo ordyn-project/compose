@@ -3,6 +3,11 @@ name: ordyn-package-discovery
 services:
   package-discovery:
     image: docker.hank-it.com/ordyn/package-discovery:${PACKAGE_DISCOVERY_TAG:-stable}
+    environment:
+      ORDYN_BROWSER_WORKERS: ${ORDYN_BROWSER_WORKERS:-http://browser-worker:8080}
+    depends_on:
+      browser-worker:
+        condition: service_healthy
     restart: always
     init: true
     env_file:
@@ -14,6 +19,24 @@ services:
       - "traefik.enable=false"
     healthcheck:
       test: 'wget -qO- "http://127.0.0.1:$${PORT:-8080}/healthz" >/dev/null || exit 1'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  browser-worker:
+    image: docker.hank-it.com/ordyn/browser-worker:${PACKAGE_DISCOVERY_TAG:-stable}
+    restart: always
+    init: true
+    environment:
+      ORDYN_BROWSER_SLOTS: ${ORDYN_BROWSER_SLOTS:-1}
+    shm_size: 1gb
+    stop_grace_period: 25s
+    labels:
+      - "cosign.verify=keys/ordyn-2026-06.pub"
+      - "traefik.enable=false"
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
