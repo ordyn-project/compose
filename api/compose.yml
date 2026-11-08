@@ -7,7 +7,9 @@ services:
     env_file: ".env"
     environment:
       ORDYN_SERVICE_ROLE: fpm
+    group_add: ["2000"]
     volumes:
+      - "postgres-logs:/var/log/ordyn-postgres:ro"
       - app-storage:/var/www/html/storage
     depends_on:
       database:
@@ -186,6 +188,7 @@ services:
       - "/opt/ordyn-compose/api/redis.conf:/usr/local/etc/redis/redis.conf:ro"
 
   database:
+    entrypoint: ["sh", "/usr/local/bin/ordyn-postgres-logs"]
     image: postgres:${POSTGRES_TAG:-18-alpine}
     restart: unless-stopped
     labels:
@@ -206,6 +209,8 @@ services:
       retries: 5
       start_period: 10s
     volumes:
+      - "postgres-logs:/var/log/ordyn-postgres"
+      - "/opt/ordyn-compose/api/postgres-logs.sh:/usr/local/bin/ordyn-postgres-logs:ro"
       - "database-storage:/var/lib/postgresql"
       - "/opt/ordyn-compose/api/postgresql.conf:/etc/postgresql/postgresql.conf:ro"
 
@@ -276,6 +281,7 @@ services:
       - "traefik.enable=false"
 
 volumes:
+  postgres-logs:
   database-storage:
   app-storage:
   redis-storage:
