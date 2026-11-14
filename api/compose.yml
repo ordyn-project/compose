@@ -9,7 +9,7 @@ services:
       ORDYN_SERVICE_ROLE: fpm
     group_add: ["2000"]
     volumes:
-      - "postgres-logs:/var/log/ordyn-postgres:ro"
+      - "postgres-logs:/var/log/postgres:ro"
       - app-storage:/var/www/html/storage
     depends_on:
       database:
@@ -209,7 +209,7 @@ services:
       retries: 5
       start_period: 10s
     volumes:
-      - "postgres-logs:/var/log/ordyn-postgres"
+      - "postgres-logs:/var/log/postgres"
       - "/opt/ordyn-compose/api/postgres-logs.sh:/usr/local/bin/ordyn-postgres-logs:ro"
       - "database-storage:/var/lib/postgresql"
       - "/opt/ordyn-compose/api/postgresql.conf:/etc/postgresql/postgresql.conf:ro"

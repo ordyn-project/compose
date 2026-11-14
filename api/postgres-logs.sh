@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-log_dir=/var/log/ordyn-postgres
+log_dir=/var/log/postgres
 mkdir -p "$log_dir"
 chown postgres:2000 "$log_dir"
 chmod 2750 "$log_dir"
