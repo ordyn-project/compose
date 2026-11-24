@@ -189,7 +189,7 @@ services:
       start_period: 10s
     volumes:
       - "${REDIS_DATA_DIR:-redis-storage}:/data"
-      - "/opt/ordyn-compose/api/redis.conf:/usr/local/etc/redis/redis.conf:ro"
+      - "./redis.conf:/usr/local/etc/redis/redis.conf:ro"
 
   database:
     entrypoint: ["sh", "/usr/local/bin/ordyn-postgres-logs"]
@@ -214,9 +214,9 @@ services:
       start_period: 10s
     volumes:
       - "${POSTGRES_LOG_DIR:-postgres-logs}:/var/log/postgres"
-      - "/opt/ordyn-compose/api/postgres-logs.sh:/usr/local/bin/ordyn-postgres-logs:ro"
+      - "./postgres-logs.sh:/usr/local/bin/ordyn-postgres-logs:ro"
       - "${POSTGRES_DATA_DIR:-database-storage}:/var/lib/postgresql"
-      - "/opt/ordyn-compose/api/postgresql.conf:/etc/postgresql/postgresql.conf:ro"
+      - "./postgresql.conf:/etc/postgresql/postgresql.conf:ro"
 
   websockets:
     image: quay.io/soketi/soketi:${WEBSOCKET_TAG:-1.6-16-alpine}

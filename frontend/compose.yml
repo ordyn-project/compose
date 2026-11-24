@@ -5,7 +5,7 @@ services:
     image: docker.hank-it.com/ordyn/frontend:${FRONTEND_TAG:-stable}
     restart: always
     volumes:
-      - "/opt/ordyn-compose/frontend/config.json:/app/config.json:ro"
+      - "./config.json:/app/config.json:ro"
     networks:
       - frontend
     labels:
