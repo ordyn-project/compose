@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     volumes:
-      - webhooks-data:/data
+      - "${WEBHOOKS_DATA_DIR:-webhooks-data}:/data"
     networks:
       - frontend
     labels:

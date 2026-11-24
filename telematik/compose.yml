@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     volumes:
-      - telematik-data:/data
+      - "${TELEMATIK_DATA_DIR:-telematik-data}:/data"
     labels:
       - "cosign.verify=keys/ordyn-2026-06.pub"
       - "traefik.enable=false"

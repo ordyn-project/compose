@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     volumes:
-      - edge-data:/data
+      - "${EDGE_DATA_DIR:-edge-data}:/data"
     networks:
       - frontend
     labels:
