@@ -1,7 +1,7 @@
 {
   "environment": "production",
   "ssl": true,
-  "frontendDomain": "ordyn.example.com",
+  "frontendDomain": "app.ordyn.example.com",
   "api": [
     {
       "server": "api.ordyn.example.com",
