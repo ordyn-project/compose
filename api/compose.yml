@@ -6,6 +6,7 @@ services:
     restart: always
     env_file: ".env"
     environment:
+      APP_NAME: "${APP_NAME:-Ordyn}"
       ORDYN_SERVICE_ROLE: fpm
     group_add: ["2000"]
     volumes:
@@ -58,6 +59,7 @@ services:
     restart: always
     env_file: ".env"
     environment:
+      APP_NAME: "${APP_NAME:-Ordyn}"
       ORDYN_SERVICE_ROLE: scheduler
     entrypoint: ordyn-observed
     command:
@@ -81,6 +83,7 @@ services:
     restart: always
     env_file: ".env"
     environment:
+      APP_NAME: "${APP_NAME:-Ordyn}"
       ORDYN_SERVICE_ROLE: horizon
     entrypoint: ordyn-observed
     stop_signal: SIGTERM
@@ -110,6 +113,7 @@ services:
     restart: always
     env_file: ".env"
     environment:
+      APP_NAME: "${APP_NAME:-Ordyn}"
       ORDYN_SERVICE_ROLE: edge-bridge
     entrypoint: ordyn-observed
     networks:
@@ -136,6 +140,7 @@ services:
     env_file: ".env"
     entrypoint: ordyn-observed
     environment:
+      APP_NAME: "${APP_NAME:-Ordyn}"
       ORDYN_SERVICE_ROLE: cache-bridge
     networks:
       - default
